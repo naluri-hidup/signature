@@ -1,9 +1,11 @@
-const CryptoJS = require('crypto-js');
+import CryptoJS from 'crypto-js';
+import getConfig from '../config'
+
 
 const Utils = {
-    sortObject: (object) => {
+    sortObject: (object: any) => {
         const sortedObject = Object.keys(object).sort().reduce(
-            (obj, key) => {
+            (obj: any, key: string) => {
                 obj[key] = object[key];
                 return obj;
             },
@@ -11,7 +13,7 @@ const Utils = {
         );
         return sortedObject;
     },
-    generateSignature: (payload) => {
+    generateSignature: (payload: any) => {
         const sortedPayload = Utils.sortObject(payload);
         console.log(sortedPayload);
         let concatinatedString = "";
@@ -20,22 +22,22 @@ const Utils = {
         });
         console.log(concatinatedString);
         const signature = CryptoJS
-            .HmacSHA256(concatinatedString, process.env.API_KEY)
+            .HmacSHA256(concatinatedString, getConfig().API_KEY)
             .toString(CryptoJS.enc.Hex);
         return signature;
     },
-    validateTimestamp: (timestamp) => {
+    validateTimestamp: (timestamp: number) => {
         const maxDurationInMilli = 900000;
         if (Date.now() - timestamp > maxDurationInMilli) {
             return false;
         }
         return true;
     },
-    validateapi_key: (api_key) => {
+    validateApiKey: (api_key: string) => {
         if (api_key === process.env.API_KEY) return true;
         return false;
     },
-    validateSignature: (req, res, next) => {
+    validateSignature: (req: any, res: any, next: any) => {
         const incomingPayload = req.body;
         const incomingSignature = req.headers.signature;
         const timestamp = req.headers.timestamp;
@@ -59,7 +61,7 @@ const Utils = {
                 message: "Timestamp has overdued"
             });
         }
-        if (!Utils.validateapi_key(api_key)) {
+        if (!Utils.validateApiKey(api_key)) {
             return res.status(400).json({
                 code: "Invalidapi_key",
                 message: "Api Key is invalid"
@@ -80,4 +82,4 @@ const Utils = {
     }
 };
 
-module.exports = Utils;
+export default Utils;
